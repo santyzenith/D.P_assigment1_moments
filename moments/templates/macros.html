@@ -12,6 +12,31 @@
 </div>
 {% endmacro %}
 
+{% macro ai_photo_card(photo) %}
+<div class="photo-card card">
+  <a class="card-thumbnail" href="{{ url_for('main.show_photo', photo_id=photo.id) }}">
+    <img class="card-img-top portrait" src="{{ url_for('main.get_image', filename=photo.filename_s) }}">
+  </a>
+  <div class="card-body">
+    {{ render_icon('suit-heart-fill') }} {{ photo.collectors_count }}
+    {{ render_icon('chat-left-fill') }} {{ photo.comments_count }}
+<textarea id="llm_description_{{ photo.id }}" class="form-control" placeholder="LLM Description" readonly>
+  {{ photo.llm_description if photo.llm_description else '' }}
+</textarea>
+
+<button class="btn btn-primary get-llm-description" data-photo-id="{{ photo.id }}">Get AI Description</button>
+          
+  </div>
+</div>
+{% endmacro %}
+
+
+<!-- {% macro comment_box(photo_id) %}
+<div class="comment-box">
+  <textarea class="form-control" placeholder="Add a comment..." name="comment_{{ photo_id }}"></textarea>
+</div>
+{% endmacro %} -->
+
 {% macro user_card(user) %}
 <div class="user-card text-center">
   <a href="{{ url_for('user.index', username=user.username) }}">

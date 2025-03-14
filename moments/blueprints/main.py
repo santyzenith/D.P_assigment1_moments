@@ -46,6 +46,12 @@ def explore():
     photos = db.session.scalars(stmt).all()
     return render_template('main/explore.html', photos=photos)
 
+@main_bp.route('/explore_ai')
+def explore_ai():
+    stmt = select(Photo).order_by(func.random()).limit(3)
+    photos = db.session.scalars(stmt).all()
+    return render_template('main/explore_ai.html', photos=photos)
+
 
 @main_bp.route('/search')
 def search():
