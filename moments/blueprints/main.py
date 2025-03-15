@@ -10,6 +10,11 @@ from moments.models import Collection, Comment, Follow, Notification, Photo, Tag
 from moments.notifications import push_collect_notification, push_comment_notification
 from moments.utils import flash_errors, redirect_back, rename_image, resize_image, validate_image
 
+# inicio de modificaciones
+from flask import request, jsonify
+from .ai_utils import get_llm_description
+# fin de modificaciones
+
 main_bp = Blueprint('main', __name__)
 
 
@@ -46,12 +51,22 @@ def explore():
     photos = db.session.scalars(stmt).all()
     return render_template('main/explore.html', photos=photos)
 
+## inicio de modificaciones
 @main_bp.route('/explore_ai')
 def explore_ai():
     stmt = select(Photo).order_by(func.random()).limit(3)
     photos = db.session.scalars(stmt).all()
     return render_template('main/explore_ai.html', photos=photos)
 
+@main_bp.route('/get_temp_llm_description', methods=['GET'])
+def get_temp_llm_description():
+    image_url = request.args.get('image_url')
+    if not image_url:
+        return jsonify({'description': 'Error: No image URL provided'}), 400
+    description = get_llm_description(image_url)  # Llama al método del otro archivo
+    return jsonify({'description': description})
+
+## fin de modificaciones
 
 @main_bp.route('/search')
 def search():

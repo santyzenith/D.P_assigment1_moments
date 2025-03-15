@@ -16,4 +16,35 @@
     {{ render_icon('shuffle') }} Change
   </a>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".get-llm-description").forEach(button => {
+      button.addEventListener("click", function () {
+        const photoId = this.getAttribute("data-photo-id");
+        const textArea = document.getElementById(`llm_description_${photoId}`);
+        // const imageUrl = document.querySelector(`.photo-card img`).src;
+        const imageUrl = this.getAttribute("data-photo-url");
+        console.log("Image URL:", imageUrl);
+        // Mostrar temporalmente la URL en el textarea
+        //textArea.value = "Fetching description for:\n" + imageUrl;
+
+        // Enviar solicitud a la API para obtener la descripción de la imagen
+       fetch(`{{ url_for('.get_temp_llm_description') }}?image_url=${encodeURIComponent(imageUrl)}`, {
+        method: "GET",
+      })
+      .then(response => response.json())
+      .then(data => {
+        textArea.value = data.description; // Reemplaza la URL con la descripción generada
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        textArea.value = "Error fetching description. " + error;
+      });
+    });
+  });
+});
+</script>
+
+
 {% endblock %}

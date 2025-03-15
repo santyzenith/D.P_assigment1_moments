@@ -21,10 +21,9 @@
     {{ render_icon('suit-heart-fill') }} {{ photo.collectors_count }}
     {{ render_icon('chat-left-fill') }} {{ photo.comments_count }}
 <textarea id="llm_description_{{ photo.id }}" class="form-control" placeholder="LLM Description" readonly>
-  {{ photo.llm_description if photo.llm_description else '' }}
 </textarea>
 
-<button class="btn btn-primary get-llm-description" data-photo-id="{{ photo.id }}">Get AI Description</button>
+<button class="btn btn-primary get-llm-description" data-photo-id="{{ photo.id }}" data-photo-url="{{ photo.filename_s }}">Get AI Description</button>
           
   </div>
 </div>
