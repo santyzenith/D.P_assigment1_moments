@@ -17,8 +17,68 @@
   </a>
 </div>
 
+<div>
+  <textarea id="llm_objects" class="form-control" readonly></textarea>
+  <!-- <button id="saveButton" class="btn btn-primary">Guardar</button> -->
+  <textarea id="aux_info" class="form-control" style="display: none" readonly></textarea>
+</div>
+
+<div>
+  <textarea id="searchWord" class="form-control" placeholder="Ingrese una palabra para buscar"></textarea>
+  <button id="searchButton" class="btn btn-primary">Buscar</button>
+</div>
+
+<div>
+  <img id="imageResult" src="" alt="Imagen relacionada" style="max-width: 70%; max-height: 300px; display: none;">
+</div>
+
+<script>
+document.getElementById("searchButton").addEventListener("click", function() {
+    const searchWord = document.getElementById("searchWord").value.toLowerCase().trim();
+    const imageResult = document.getElementById("imageResult");
+    const aux_info = document.getElementById("aux_info").value;
+
+    if (!aux_info) {
+        alert("No hay datos en aux_info");
+        return;
+    }
+    let auxData;
+    try {
+        auxData = JSON.parse(aux_info);
+    } catch (error) {
+        console.error("Error al parsear aux_info:", error);
+        alert("Error en los datos almacenados.");
+        return;
+    }
+    let foundImage = null;
+    for (const [imagePath, data] of Object.entries(auxData)) {
+        if (typeof data.objects === "string") {
+            const objectsList = data.objects
+                .split(",") // Dividir por comas
+                .map(obj => obj.trim().replace(/[.,]+$/, "")) // Limpiar espacios y caracteres no deseados
+                .filter(obj => obj.length > 0); // Eliminar elementos vacíos
+
+            if (objectsList.includes(searchWord)) {
+                foundImage = imagePath;
+                break;
+            }
+        }
+    }
+    if (foundImage) {
+        imageResult.src = foundImage;
+        imageResult.style.display = "block";
+    } else {
+        alert("No se encontró una imagen con esa palabra.");
+        imageResult.style.display = "none";
+    }
+});
+
+</script>
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+      const objArea = document.getElementById("llm_objects");
+      const aux_info  = document.getElementById("aux_info");
     document.querySelectorAll(".get-llm-description").forEach(button => {
       button.addEventListener("click", function () {
         const photoId = this.getAttribute("data-photo-id");
@@ -26,18 +86,30 @@
         // const imageUrl = document.querySelector(`.photo-card img`).src;
         const imageUrl = this.getAttribute("data-photo-url");
         console.log("Image URL:", imageUrl);
-        // Mostrar temporalmente la URL en el textarea
-        //textArea.value = "Fetching description for:\n" + imageUrl;
 
-        // Enviar solicitud a la API para obtener la descripción de la imagen
        fetch(`{{ url_for('.get_temp_llm_description') }}?image_url=${encodeURIComponent(imageUrl)}`, {
         method: "GET",
       })
-      .then(response => response.json())
-      .then(data => {
-        textArea.value = data.description; // Reemplaza la URL con la descripción generada
-      })
-      .catch(error => {
+       .then(response => response.json())
+       .then(data => {
+            const imageKey = Object.keys(data)[0];
+            const description = data[imageKey].description;
+            const objects = data[imageKey].objects;
+        
+            textArea.value = description;
+            objArea.value += objects + ', ';
+           
+            // Verificar si aux_info ya tiene contenido y parsearlo
+            let auxData = aux_info.value ? JSON.parse(aux_info.value) : {};
+        
+            // Agregar o actualizar la información de imageKey
+            auxData[imageKey] = { objects: objects };
+        
+            // Convertir nuevamente a JSON y actualizar el campo
+            aux_info.value = JSON.stringify(auxData, null, 2);
+           
+        })
+       .catch(error => {
         console.error("Error:", error);
         textArea.value = "Error fetching description. " + error;
       });

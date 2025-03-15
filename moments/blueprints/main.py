@@ -1,3 +1,6 @@
+from json_repair import repair_json
+import json5
+
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_from_directory, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func, select
@@ -64,7 +67,15 @@ def get_temp_llm_description():
     if not image_url:
         return jsonify({'description': 'Error: No image URL provided'}), 400
     description = get_llm_description(image_url)  # Llama al método del otro archivo
-    return jsonify({'description': description})
+    print(description)
+    pre_data = repair_json(description)
+    f_data = json5.loads(pre_data)
+    return jsonify({
+        "/images/"+image_url: {
+            "description": f_data["desc"],
+            "objects": f_data["objs"]
+        }
+    })
 
 ## fin de modificaciones
 

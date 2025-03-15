@@ -37,6 +37,13 @@ def get_llm_description(image_path):
         api_key=config["openai"]["api_key"],
     )
 
+    prompt = """Briefly describe the image and find the objects present in the image , answer only a JSON object in the following format:
+{
+'desc': 'description of the image, in Spanish',
+'objs': 'objects present in the image, in Spanish, e.g.: books, shoes...' 
+}
+"""
+
     completion = client.chat.completions.create(
         model=config["openai"]["model"],
         messages=[
@@ -45,7 +52,7 @@ def get_llm_description(image_path):
                 "content": [
                     {
                         "type": "text",
-                        "text": "Briefly describe the image, answer in Spanish."
+                        "text": prompt
                     },
                     {
                         "type": "image_url",
@@ -58,6 +65,7 @@ def get_llm_description(image_path):
         ]
     )
     
+    #return "{'desc': 'una planta', 'objs': 'planta, vaso'}"
     return completion.choices[0].message.content
 
     
